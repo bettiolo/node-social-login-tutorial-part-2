@@ -1,5 +1,6 @@
 h3 Social Login: Client-side login + Server-side user management
 p Status: {{ login.getStatus() }}
+p Session: {{ login.session.sessionId }}
 div(ng-show='login.isLoggedIn()')
 	p Display name: {{ login.user.displayName }}
 	p Email(s):&nbsp;
@@ -8,4 +9,3 @@ div(ng-show='login.isLoggedIn()')
 	p Domain: {{ login.user.domain }}
 	p Organisation(s):&nbsp;
 		span(ng-repeat='organisation in login.user.organizations') {{ organisation.name }} ({{ organisation.type }})
-	p Server-side Google user: {{ login.tokenInfo.error || login.tokenInfo.email }}
