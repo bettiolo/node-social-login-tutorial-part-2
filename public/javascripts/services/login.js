@@ -4,16 +4,19 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 	var _this = this;
 
 	function setStatus(status) {
-		console.log('LoginService status: ' + status);
-		if (status != _loginStatus) {
+		if (_loginStatus != status ) {
+			console.log('LoginService status: ' + status);
 			_loginStatus = status;
 		}
 	}
 	setStatus('logging_in');
 
-	this.authStatus = null;
-	this.user = null;
-	this.tokenInfo = null;
+	this.reset = function () {
+		this.authStatus = null;
+		this.user = null;
+		this.session = null;
+	};
+	this.reset();
 	this.init = function () {
 		$timeout(function () {
 			gapi.signin.render('signInButton', {
@@ -37,6 +40,7 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 			disconnectUser(gapi.auth.getToken().access_token);
 		}
 		gapi.auth.signOut();
+		this.reset();
 	};
 
 	function disconnectUser(access_token) {
@@ -53,51 +57,49 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 	}
 
 	function onSignInCallback(authResult) {
-		console.log('onSignInCallback() status:', authResult);
+		if (_this.authStatus) {
+			console.log('Already logged in.');
+			return;
+		}
+		console.log('onSignInCallback() authResult:', authResult)
+		_this.reset();
 		_this.authStatus = authResult;
-		_this.user = null;
-		_this.tokenInfo = null;
 		if (authResult['status']['signed_in']) {
-			if (_this.getStatus() !== 'logged_in') {
-				setStatus('logged_in');
-				getTokenInfo();
-				getUser();
-			}
+			getSession();
 		} else {
-			// Possible error values:
-			//   "user_signed_out" - User is signed-out
-			//   "access_denied" - User denied access to your app
-			//   "immediate_failed" - Could not automatically log in the user
-			if (_this.getStatus() !== 'logged_out') {
-				setStatus('logged_out');
-			}
+			setStatus('logged_out');
 		}
 	}
 
-	function getUser() {
-		gapi.client.load('plus', 'v1', function () {
-			var request = gapi.client.plus.people.get({
-				'userId': 'me'
+	function getSession() {
+		$http.post('api/google/login', { access_token: _this.authStatus.access_token })
+			.success(function (data) {
+				_this.session = data;
+				console.log('getSession() POST ~/api/google/login success:', _this.session);
+				getUser();
+			})
+			.error(function (data, status) {
+				_this.session = data;
+				console.log('getSession() POST ~/api/google/login error:', data, status);
+				setStatus('logged_out');
+				_this.reset();
 			});
-			request.execute(function (resp) {
-				$rootScope.$apply(function () {
-					console.log('getUser() :', resp);
-					_this.user = resp;
-				});
-			});
-		});
 	}
 
-	function getTokenInfo() {
-		$http.post('api/google/token-check', { access_token: _this.authStatus.access_token })
-			.success(function (data, status, headers, config, statusText) {
-				_this.tokenInfo = data;
-				console.log('getTokenInfo() Success:', _this.tokenInfo);
+	function getUser() {
+		$http.get('api/user')
+			.success(function (data) {
+				_this.user = data;
+				console.log('getUser() GET ~/api/user success:', _this.user);
+				setStatus('logged_in');
 			})
-			.error(function (data, status, headers, config, statusText) {
-				_this.tokenInfo = data;
-				console.log('getTokenInfo() Error:', data, status);
+			.error(function (data, status) {
+				_this.user = data;
+				console.log('getUser() GET ~/api/user error:', data, status);
+				setStatus('logged_out');
+				_this.reset();
 			});
 	}
+
 
 });
