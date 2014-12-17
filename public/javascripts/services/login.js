@@ -66,28 +66,28 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 		_this.reset();
 		if (authResult['status']['signed_in']) {
 			_this.authStatus = authResult;
-			loginGoogleUser();
+			authenticateGoogleUser();
 		} else {
 			setStatus('logged_out');
 		}
 	}
 
-	function loginGoogleUser() {
-		$http.post('api/google/login', { access_token: _this.authStatus.access_token })
+	function authenticateGoogleUser() {
+		$http.post('api/google/authenticate', { access_token: _this.authStatus.access_token })
 			.success(function (data) {
 				_this.session = data;
-				console.log('loginGoogleUser() POST ~/api/google/login success:', _this.session);
+				console.log('loginGoogleUser() POST ~/api/google/authenticate success:', _this.session);
 				_this.existingUser = true;
 				$http.defaults.headers.common.Authorization = 'Bearer ' + _this.session.sessionId;
 				getUser();
 			})
 			.error(function (data, status) {
 				if (status === 403) {
-					console.log('loginGoogleUser() POST ~/api/google/login user not signed up:', data, status);
+					console.log('loginGoogleUser() POST ~/api/google/authenticate user not signed up:', data, status);
 					_this.existingUser = false;
 					signupGoogleUser();
 				} else {
-					console.log('loginGoogleUser() POST ~/api/google/login error:', data, status);
+					console.log('loginGoogleUser() POST ~/api/google/authenticate error:', data, status);
 					setStatus('logged_out');
 					_this.reset();
 				}
@@ -98,7 +98,7 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 		$http.post('api/google/signup', { access_token: _this.authStatus.access_token })
 			.success(function (data) {
 				console.log('signupGoogleUser() POST ~/api/google/signup success:', data);
-				loginGoogleUser();
+				authenticateGoogleUser();
 			})
 			.error(function (data, status) {
 				console.log('signupGoogleUser() POST ~/api/google/signup error:', data, status);

@@ -68,7 +68,7 @@ function getUserById(id) {
 	return cache.get(cacheKey);
 }
 
-router.post('/google/login', function (req, res) {
+router.post('/google/authenticate', function (req, res) {
 	validateTokenInfo(req.body.access_token, function (err, tokenInfo) {
 		if (err) {
 			res.status(500);
