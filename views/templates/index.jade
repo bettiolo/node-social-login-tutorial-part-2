@@ -1,6 +1,6 @@
 h3 Social Login: Client-side login + Server-side user management
 p Status: {{ login.getStatus() }}
-p(ng-show='login.session') Session: {{ login.session.sessionId }}
+p(ng-show='login.token') Token: {{ login.token }}
 p(ng-show='login.existingUser !== null') User already registered: {{ login.existingUser }}
 div(ng-show='login.isLoggedIn()')
 	p Name: {{ login.user.name }}

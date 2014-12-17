@@ -28,13 +28,13 @@ function getUserProfile(accessToken, cb) {
 	});
 }
 
-function createSessionId(userId, cb) {
+function createToken(userId, cb) {
 	crypto.randomBytes(128, function (err, buf) {
 		if (err) { return cb(err); }
-		var sessionId = buf.toString('base64');
-		var cacheKey = 'session:' + sessionId;
+		var token = buf.toString('base64');
+		var cacheKey = 'token:' + token;
 		cache.put(cacheKey, userId);
-		return cb(null, sessionId);
+		return cb(null, token);
 	});
 }
 
@@ -58,8 +58,8 @@ function getUserIdByGoogleUserId(googleUserId) {
 	return cache.get(cacheKey);
 }
 
-function getUserIdBySessionId(sessionId) {
-	var cacheKey = 'session:' + sessionId;
+function getUserIdByToken(token) {
+	var cacheKey = 'token:' + token;
 	return cache.get(cacheKey);
 }
 
@@ -82,13 +82,13 @@ router.post('/google/authenticate', function (req, res) {
 			res.status(403);
 			return res.json({ error : 'User not found' });
 		}
-		createSessionId(userId, function (err, sessionId) {
+		createToken(userId, function (err, token) {
 			if (err) {
 				res.status(500);
 				return res.json(err);
 			}
 			res.status(200);
-			res.json({ sessionId : sessionId });
+			res.json({ token : token });
 		});
 	});
 });
@@ -134,7 +134,7 @@ router.get('/user', function (req, res) {
 		res.status(401);
 		return res.json({ error : 'Bearer token must be specified in Authorisation header' });
 	}
-	var userId = getUserIdBySessionId(token);
+	var userId = getUserIdByToken(token);
 	var user = getUserById(userId);
 	user.name = user.linkedProfiles.google.displayName;
 	user.imageUrl = user.linkedProfiles.google.image.url.replace('?sz=50', '');

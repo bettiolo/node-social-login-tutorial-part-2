@@ -14,7 +14,7 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 	this.reset = function () {
 		this.authStatus = null;
 		this.user = null;
-		this.session = null;
+		this.token = null;
 		this.existingUser = null;
 	};
 	this.reset();
@@ -75,10 +75,10 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 	function authenticateGoogleUser() {
 		$http.post('api/google/authenticate', { access_token: _this.authStatus.access_token })
 			.success(function (data) {
-				_this.session = data;
-				console.log('loginGoogleUser() POST ~/api/google/authenticate success:', _this.session);
+				_this.token = data.token;
+				console.log('loginGoogleUser() POST ~/api/google/authenticate success:', _this.token);
 				_this.existingUser = true;
-				$http.defaults.headers.common.Authorization = 'Bearer ' + _this.session.sessionId;
+				$http.defaults.headers.common.Authorization = 'Bearer ' + _this.token;
 				getUser();
 			})
 			.error(function (data, status) {
