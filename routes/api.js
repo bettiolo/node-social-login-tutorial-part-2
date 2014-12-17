@@ -136,9 +136,9 @@ router.get('/user', function (req, res) {
 	}
 	var userId = getUserIdByToken(token);
 	var user = getUserById(userId);
-	user.name = user.linkedProfiles.google.displayName;
-	user.imageUrl = user.linkedProfiles.google.image.url.replace('?sz=50', '');
 	user.emails = user.linkedProfiles.google.emails.map(function (email) { return email.value });
+	user.name = user.linkedProfiles.google.displayName || user.emails[0];
+	user.imageUrl = user.linkedProfiles.google.image.url.replace('?sz=50', '');
 	user.domain = user.linkedProfiles.google.domain;
 	res.status(200);
 	res.json(user);
