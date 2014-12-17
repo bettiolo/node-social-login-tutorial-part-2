@@ -1,11 +1,10 @@
 h3 Social Login: Client-side login + Server-side user management
 p Status: {{ login.getStatus() }}
-p Session: {{ login.session.sessionId }}
+p(ng-show='login.session') Session: {{ login.session.sessionId }}
+p(ng-show='login.existingUser !== null') User already registered: {{ login.existingUser }}
 div(ng-show='login.isLoggedIn()')
-	p Display name: {{ login.user.displayName }}
+	p Name: {{ login.user.name }}
 	p Email(s):&nbsp;
-		span(ng-repeat='email in login.user.emails') {{ email.value }}
+		span(ng-repeat='email in login.user.emails') {{ email }}
 	p User ID: {{ login.user.id }}
 	p Domain: {{ login.user.domain }}
-	p Organisation(s):&nbsp;
-		span(ng-repeat='organisation in login.user.organizations') {{ organisation.name }} ({{ organisation.type }})
