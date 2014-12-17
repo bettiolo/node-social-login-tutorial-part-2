@@ -77,7 +77,9 @@ app.service('loginService', function ($rootScope, $timeout, $http) {
 			.success(function (data) {
 				_this.token = data.token;
 				console.log('loginGoogleUser() POST ~/api/google/authenticate success:', _this.token);
-				_this.existingUser = true;
+				if (_this.existingUser !== false) {
+					_this.existingUser = true;
+				}
 				$http.defaults.headers.common.Authorization = 'Bearer ' + _this.token;
 				getUser();
 			})
